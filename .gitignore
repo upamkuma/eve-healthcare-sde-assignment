@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .env
 *.db
+*.zip
 .idea/
 .vscode/
 .DS_Store
