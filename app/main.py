@@ -1,9 +1,11 @@
 import logging
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from app.api.auth import router as auth_router
 from app.api.bookings import router as bookings_router
@@ -15,6 +17,7 @@ from app.db.base import Base
 from app.db.session import engine
 
 logger = logging.getLogger("eve.api")
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 @asynccontextmanager
@@ -57,6 +60,14 @@ app.include_router(auth_router)
 app.include_router(centres_router)
 app.include_router(bookings_router)
 app.include_router(payments_router)
+
+
+@app.get("/", include_in_schema=False)
+def serve_portal():
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"status": "ok", "docs": "/docs"}
 
 
 @app.get("/health", tags=["System"])

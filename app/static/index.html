@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVE Healthcare — Diagnostic Booking & Payment Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.2);
+      --accent: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Top Navigation */
+    header {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.35rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      color: #34d399;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    /* Container Layout */
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    /* Grid Sections */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 868px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(10, 15, 26, 0.8);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #042f1f;
+    }
+    .btn-primary:hover {
+      background: #059669;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+    }
+
+    /* Centre & Test Item Cards */
+    .centre-card {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 1rem;
+    }
+    .centre-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .centre-loc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+    .tests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .test-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .test-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .test-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .test-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .price-tag {
+      font-weight: 700;
+      font-family: var(--mono);
+      color: #34d399;
+      font-size: 0.95rem;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-PENDING { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-CONFIRMED { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-FAILED { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-CANCELLED { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    /* Bookings Table */
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    /* Code Console */
+    .console {
+      background: #050810;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: #a5f3fc;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-badge">EVE</div>
+      <span>Healthcare SDE Portal</span>
+    </div>
+    <div class="nav-links">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Backend Online (Port 8000)</span>
+      </div>
+      <a href="/docs" target="_blank">Swagger UI ↗</a>
+      <a href="/redoc" target="_blank">ReDoc ↗</a>
+      <a href="/health" target="_blank">/health</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Section 1: Authentication & Quick Profiles -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🔐 1. Authentication & Session Manager</span>
+        <span id="activeUserBadge" class="badge badge-PENDING">Unauthenticated</span>
+      </div>
+      <div class="grid-2">
+        <div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Quickly authenticate using the seeded credentials or create a brand new patient account:
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <button class="btn btn-secondary btn-sm" onclick="quickLogin('user@evehealthcare.com', 'User@123')">
+              Demo Patient (User@123)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="quickLogin('admin@evehealthcare.com', 'Admin@123')">
+              Admin User (Admin@123)
+            </button>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" value="user@evehealthcare.com">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" value="User@123">
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" onclick="handleLogin()">Login (Get JWT)</button>
+            <button class="btn btn-secondary" onclick="handleSignup()">Sign Up New User</button>
+          </div>
+        </div>
+        <div>
+          <label>Active JWT Access Token</label>
+          <div class="console" id="tokenDisplay" style="height: 180px;">No active session. Please log in.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Catalog & Booking Flow -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🏥 2. Diagnostic Centres & Tests Catalog</span>
+        <button class="btn btn-secondary btn-sm" onclick="loadCentres()">Refresh Catalog</button>
+      </div>
+      <div id="centresList">
+        <div style="color: var(--text-muted); font-size: 0.9rem;">Loading centres...</div>
+      </div>
+    </div>
+
+    <!-- Section 3: Patient Bookings Dashboard -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 3. Live Bookings & Simulated Payments</span>
+        <button class="btn btn-secondary btn-sm" onclick="loadBookings()">Refresh My Bookings</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Test ID</th>
+              <th>Centre ID</th>
+              <th>Appointment Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                Login to view and manage your diagnostic bookings.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 4: Webhook & Idempotency Testing Lab -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">⚡ 4. Webhook & Idempotency Simulation Console</span>
+        <span class="badge badge-CONFIRMED">Idempotent</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Simulate payment provider updates at <code>POST /payments/webhook/</code>. Re-submitting the same event ID demonstrates that the backend is 100% idempotent and protects the booking from duplicate creation or corruption.
+      </p>
+      <div class="grid-2">
+        <div>
+          <div class="form-group">
+            <label>Provider Payment ID</label>
+            <input type="text" id="whPaymentId" placeholder="e.g. sim_8b6e6bf4798c4beaa20c6a83a005ee56">
+          </div>
+          <div class="form-group">
+            <label>Event ID (Deduplication Key)</label>
+            <input type="text" id="whEventId" value="evt-web-test-1001">
+          </div>
+          <div class="form-group">
+            <label>Webhook Status</label>
+            <select id="whStatus">
+              <option value="SUCCESS">SUCCESS (Confirms Booking)</option>
+              <option value="FAILED">FAILED (Fails Booking)</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button class="btn btn-primary" onclick="triggerWebhook()">Send Webhook</button>
+            <button class="btn btn-secondary" onclick="generateNewEventId()">New Event ID</button>
+          </div>
+        </div>
+        <div>
+          <label>Webhook Execution Output</label>
+          <div class="console" id="webhookConsole" style="height: 220px;">Ready for simulation.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let authToken = localStorage.getItem('eve_token') || '';
+    let currentUser = null;
+
+    // Initialize UI
+    window.addEventListener('DOMContentLoaded', () => {
+      if (authToken) {
+        document.getElementById('tokenDisplay').innerText = authToken;
+        fetchUserProfile();
+        loadBookings();
+      }
+      loadCentres();
+    });
+
+    function quickLogin(email, password) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = password;
+      handleLogin();
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          authToken = data.access_token;
+          localStorage.setItem('eve_token', authToken);
+          document.getElementById('tokenDisplay').innerText = authToken;
+          await fetchUserProfile();
+          await loadBookings();
+          alert('Logged in successfully!');
+        } else {
+          alert('Login failed: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Error connecting to backend: ' + err.message);
+      }
+    }
+
+    async function handleSignup() {
+      const email = prompt('Enter email address:');
+      if (!email) return;
+      const full_name = prompt('Enter full name:');
+      if (!full_name) return;
+      const password = prompt('Enter password (min 8 chars):');
+      if (!password) return;
+
+      try {
+        const res = await fetch('/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, full_name, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Signup complete! Please click Login.');
+          document.getElementById('loginEmail').value = email;
+          document.getElementById('loginPassword').value = password;
+        } else {
+          alert('Signup failed: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function fetchUserProfile() {
+      if (!authToken) return;
+      try {
+        const res = await fetch('/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (res.ok) {
+          currentUser = await res.json();
+          const badge = document.getElementById('activeUserBadge');
+          badge.className = 'badge badge-CONFIRMED';
+          badge.innerText = `${currentUser.full_name} (${currentUser.is_admin ? 'Admin' : 'Patient'})`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadCentres() {
+      const container = document.getElementById('centresList');
+      try {
+        const res = await fetch('/centres');
+        const data = await res.json();
+        if (res.ok && data.length > 0) {
+          container.innerHTML = data.map(c => `
+            <div class="centre-card">
+              <div class="centre-name">🏢 ${c.name}</div>
+              <div class="centre-loc">📍 ${c.location}</div>
+              <div class="tests-grid">
+                ${c.tests.map(t => `
+                  <div class="test-box">
+                    <div>
+                      <div class="test-title">${t.name}</div>
+                      <div class="test-desc">${t.description || 'Routine diagnostic evaluation'}</div>
+                    </div>
+                    <div class="test-bottom">
+                      <span class="price-tag">₹${t.price}</span>
+                      <button class="btn btn-primary btn-sm" onclick="bookTest(${c.id}, ${t.id}, '${t.name.replace(/'/g, "\\'")}', '${t.price}')">
+                        Book Test
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div style="color: var(--text-muted)">No diagnostic centres found. Please run seed script.</div>';
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color: var(--danger)">Error loading centres: ' + err.message + '</div>';
+      }
+    }
+
+    async function bookTest(centreId, testId, testName, testPrice) {
+      if (!authToken) {
+        alert('Please log in first to book an appointment!');
+        return;
+      }
+
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 2);
+      const defaultDateIso = defaultDate.toISOString().slice(0, 16);
+
+      const chosenDate = prompt(`Book appointment for ${testName} (₹${testPrice})?\nEnter appointment date/time (YYYY-MM-DDTHH:MM):`, defaultDateIso);
+      if (!chosenDate) return;
+
+      try {
+        const res = await fetch('/bookings', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            centre_id: centreId,
+            test_id: testId,
+            appointment_at: new Date(chosenDate).toISOString()
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Booking created successfully!\nBooking ID: ${data.id}\nAmount: ₹${data.amount}\nStatus: ${data.status}`);
+          loadBookings();
+        } else {
+          alert('Booking failed: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function loadBookings() {
+      const tbody = document.getElementById('bookingsTableBody');
+      if (!authToken) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted)">Login to view and manage your diagnostic bookings.</td></tr>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/bookings', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (res.ok && data.length > 0) {
+          tbody.innerHTML = data.map(b => `
+            <tr>
+              <td style="font-family: var(--mono); font-weight: 700;">#${b.id}</td>
+              <td>Test #${b.test_id}</td>
+              <td>Centre #${b.centre_id}</td>
+              <td>${new Date(b.appointment_at).toLocaleString()}</td>
+              <td style="font-family: var(--mono); font-weight: 700; color: #34d399;">₹${b.amount}</td>
+              <td><span class="badge badge-${b.status}">${b.status}</span></td>
+              <td>
+                ${b.status === 'PENDING' ? `
+                  <button class="btn btn-primary btn-sm" onclick="simulatePayment(${b.id}, 'SUCCESS')">Pay (Success)</button>
+                  <button class="btn btn-danger btn-sm" onclick="simulatePayment(${b.id}, 'FAILED')">Pay (Fail)</button>
+                  <button class="btn btn-secondary btn-sm" onclick="cancelBooking(${b.id})">Cancel</button>
+                ` : `
+                  <button class="btn btn-secondary btn-sm" onclick="checkPayment(${b.id})">View Payment</button>
+                `}
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted)">No bookings yet. Book a test above!</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color: var(--danger)">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function simulatePayment(bookingId, simulateResult) {
+      const idempotencyKey = `web-pay-${bookingId}-${Date.now()}`;
+      try {
+        const res = await fetch('/payments/', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            booking_id: bookingId,
+            simulate: simulateResult,
+            idempotency_key: idempotencyKey
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Payment simulated with result: ${data.status}!\nProvider Payment ID: ${data.provider_payment_id}`);
+          document.getElementById('whPaymentId').value = data.provider_payment_id;
+          loadBookings();
+        } else {
+          alert('Payment simulation failed: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Payment error: ' + err.message);
+      }
+    }
+
+    async function cancelBooking(bookingId) {
+      if (!confirm(`Are you sure you want to cancel booking #${bookingId}?`)) return;
+      try {
+        const res = await fetch(`/bookings/${bookingId}/cancel`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Booking #${bookingId} has been CANCELLED.`);
+          loadBookings();
+        } else {
+          alert('Cancel failed: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function checkPayment(bookingId) {
+      try {
+        const res = await fetch(`/payments/booking/${bookingId}`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Payment Details for Booking #${bookingId}:\nStatus: ${data.status}\nProvider ID: ${data.provider_payment_id}\nAmount: ₹${data.amount}`);
+          document.getElementById('whPaymentId').value = data.provider_payment_id;
+        } else {
+          alert('Could not fetch payment: ' + (data.detail || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function generateNewEventId() {
+      document.getElementById('whEventId').value = `evt-web-${Math.floor(Math.random() * 900000 + 100000)}`;
+    }
+
+    async function triggerWebhook() {
+      const paymentId = document.getElementById('whPaymentId').value.trim();
+      const eventId = document.getElementById('whEventId').value.trim();
+      const status = document.getElementById('whStatus').value;
+      const consoleEl = document.getElementById('webhookConsole');
+
+      if (!paymentId) {
+        alert('Please enter a Provider Payment ID first (or simulate a payment above).');
+        return;
+      }
+
+      consoleEl.innerText = `Sending POST /payments/webhook/ with event_id="${eventId}"...\n`;
+      const startTime = performance.now();
+
+      try {
+        const res = await fetch('/payments/webhook/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_id: eventId,
+            provider_payment_id: paymentId,
+            status: status
+          })
+        });
+        const latency = Math.round(performance.now() - startTime);
+        const data = await res.json();
+        
+        consoleEl.innerText = `HTTP ${res.status} ${res.statusText} (${latency}ms)\n\n` + JSON.stringify(data, null, 2);
+        loadBookings();
+      } catch (err) {
+        consoleEl.innerText = `Error: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
