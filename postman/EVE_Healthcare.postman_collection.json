@@ -1,0 +1,365 @@
+{
+  "info": {
+    "name": "EVE Healthcare Diagnostic Booking & Payment API",
+    "_postman_id": "eve-healthcare-assignment",
+    "description": "Postman collection covering authentication, diagnostic centres & tests, bookings, simulated payments, idempotent webhooks, and audit logs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@evehealthcare.com\",\n  \"password\": \"User@12345\",\n  \"full_name\": \"New User\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/signup"
+          }
+        },
+        {
+          "name": "User Login (Form Data)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "user@evehealthcare.com"
+                },
+                {
+                  "key": "password",
+                  "value": "User@123"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "User Login (JSON Body)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@evehealthcare.com\",\n  \"password\": \"User@123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@evehealthcare.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Get Profile (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Diagnostic Centres & Tests",
+      "item": [
+        {
+          "name": "List Centres (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/centres?page=1&page_size=20"
+          }
+        },
+        {
+          "name": "Search Centres by Location",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/centres?search=Noida"
+          }
+        },
+        {
+          "name": "Get Centre Details by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/centres/1"
+          }
+        },
+        {
+          "name": "List Tests for Centre",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/centres/1/tests"
+          }
+        },
+        {
+          "name": "Admin: Create Centre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"EVE Advanced Diagnostics - Bengaluru\",\n  \"location\": \"Koramangala, Bengaluru, Karnataka\"\n}"
+            },
+            "url": "{{baseUrl}}/centres"
+          }
+        },
+        {
+          "name": "Admin: Add Test to Centre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Liver Function Test (LFT)\",\n  \"description\": \"Comprehensive liver enzyme panel\",\n  \"price\": 599.00\n}"
+            },
+            "url": "{{baseUrl}}/centres/1/tests"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"test_id\": 1,\n  \"centre_id\": 1,\n  \"appointment_at\": \"2027-01-15T10:30:00Z\"\n}"
+            },
+            "url": "{{baseUrl}}/bookings"
+          }
+        },
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings?page=1&page_size=20"
+          }
+        },
+        {
+          "name": "Get Booking Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Cancel Pending Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}/cancel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Payments & Webhook",
+      "item": [
+        {
+          "name": "Simulate Successful Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"simulate\": \"SUCCESS\",\n  \"idempotency_key\": \"postman-payment-001\"\n}"
+            },
+            "url": "{{baseUrl}}/payments/"
+          }
+        },
+        {
+          "name": "Simulate Failed Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"simulate\": \"FAILED\",\n  \"idempotency_key\": \"postman-payment-002\"\n}"
+            },
+            "url": "{{baseUrl}}/payments/"
+          }
+        },
+        {
+          "name": "Get Payment For Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/payments/booking/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Payment Webhook (Idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"evt-postman-001\",\n  \"provider_payment_id\": \"replace-with-payment-provider-id\",\n  \"status\": \"SUCCESS\"\n}"
+            },
+            "url": "{{baseUrl}}/payments/webhook/"
+          }
+        },
+        {
+          "name": "Admin: List Webhook Events Audit Log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/payments/webhook/events"
+          }
+        }
+      ]
+    }
+  ]
+}
